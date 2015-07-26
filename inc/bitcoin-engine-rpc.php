@@ -51,7 +51,7 @@ class Bitcoin_Engine_Rpc {
 
 			$connection->walletpassphrase(
 				$this->settings_menu['rpcwallet'],
-				intval( $this->settings'rpctimeout'] )
+				intval( $this->settings['rpctimeout'] )
 			);
 
 			return $connection;
