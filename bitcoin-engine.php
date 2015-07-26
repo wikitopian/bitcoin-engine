@@ -15,8 +15,6 @@ class Bitcoin_Engine {
 	protected $db;
 	protected $rpc;
 
-	public $settings;
-
 	public function __construct() {
 
 		$settings = array(
@@ -28,8 +26,8 @@ class Bitcoin_Engine {
 			'fx_rate_url' => 'https://blockchain.info/ticker?cors=true',
 		);
 
-		$this->settings = get_option( 'bitcoin-engine', $settings );
-		update_option( 'bitcoin-engine', $this->settings );
+		$settings = get_option( 'bitcoin-engine', $settings );
+		update_option( 'bitcoin-engine', $settings );
 
 		// user interface
 		$settings_menu = array(
@@ -160,6 +158,16 @@ class Bitcoin_Engine {
 				'fx'  => $settings_menu['fx'],
 			)
 		);
+
+	}
+
+	public function set_debug( $debug = true ) {
+
+		$settings = get_option( 'bitcoin-engine' );
+
+		$settings['debug'] = $debug;
+
+		update_option( 'bitcoin-engine', $settings );
 
 	}
 
