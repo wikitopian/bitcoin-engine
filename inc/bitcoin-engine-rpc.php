@@ -47,12 +47,11 @@ class Bitcoin_Engine_Rpc {
 
 		try {
 			$debug = $this->settings['debug'];
-			$debug = true;
 			$connection = new jsonRPCClient( $this->connect_string, $debug );
 
 			$connection->walletpassphrase(
 				$this->settings_menu['rpcwallet'],
-				intval( $this->settings['rpctimeout'] )
+				intval( $this->settings'rpctimeout'] )
 			);
 
 			return $connection;
