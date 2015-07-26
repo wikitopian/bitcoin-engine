@@ -179,6 +179,68 @@ class Bitcoin_Engine {
 
 	}
 
+	public function get_post_html() {
+
+		$post_array = $this->get_post_array();
+
+		echo "\n\n<!-- get_post_html BEGIN --><br />\n\n";
+
+		print_r( $post_array );
+
+		echo "\n\n<!-- get_post_HTML END -->";
+
+	}
+
+	public function get_post_array() {
+
+		return array();
+
+	}
+
+	public function get_post_history_html() {
+
+		$post_history = $this->get_post_history_array();
+
+		echo "\n\n<!-- get_post_history BEGIN -->\n\n";
+
+		foreach( $post_history as $transaction ) {
+
+			print_r( $transaction );
+
+		}
+
+		echo "\n\n<!-- get_post_history END -->\n\n";
+
+	}
+
+	public function get_post_history_array() {
+
+		return array();
+
+	}
+
+	public function get_user_history_html() {
+
+		$user_history = $this->get_user_history_array();
+
+		echo "\n\n<!-- get_user_history BEGIN -->\n\n";
+
+		foreach( $user_history as $transaction ) {
+
+			print_r( $transaction );
+
+		}
+
+		echo "\n\n<!-- get_user_history END -->\n\n";
+
+	}
+
+	public function get_user_history_array() {
+
+		return array();
+
+	}
+
 }
 
 $bitcoin_engine = new Bitcoin_Engine();
