@@ -1,99 +1,104 @@
 <?php
 
-class Btc_Tip_Jar_Menu {
+class Bitcoin_Engine_Menu {
+
 	public $settings;
 
-	public function __construct( $defaults = array() ) {
+	public function __construct() {
 
-		$this->settings = get_option( 'btc-tip-jar_options', $defaults );
+		$this->settings = get_option( 'bitcoin-engine_menu' );
 
 		add_action( 'admin_menu', array( &$this, 'menu' ) );
 		add_action( 'admin_init', array( &$this, 'menu_settings' ) );
 
 	}
-public function menu() {
+
+	public function menu() {
 
 		add_options_page(
-			__( 'Bitcoin Tip Jar', 'btc-tip-jar' ),
-			__( 'Bitcoin Tip Jar', 'btc-tip-jar' ),
+			'Bitcoin Engine',
+			'Bitcoin Engine',
 			'manage_options',
 			__FILE__,
 			array( &$this, 'menu_page' )
 		);
 
 	}
+
 	public function menu_settings() {
-		register_setting( 'btc-tip-jar_options', 'btc-tip-jar_options' );
+		register_setting( 'bitcoin-engine_menu', 'bitcoin-engine_menu' );
 	}
+
 	public function menu_page() {
 
 		echo '<div class="wrap">';
-		printf( '<h2>%s</h2>', __( 'Bitcoin Tip Jar Settings', 'btc-tip-jar' ) );
+		echo '<h2>Bitcoin Engine Settings</h2>';
 		echo '<form method="post" action="options.php">';
-		settings_fields( 'btc-tip-jar_options' );
-		do_settings_fields( 'btc-tip-jar_options', 'btc-tip-jar_options' );
+		settings_fields( 'bitcoin-engine_menu' );
+		do_settings_fields( 'bitcoin-engine_menu', 'bitcoin-engine_menu' );
 		echo '<table class="form-table">';
 
 		$this->menu_page_item(
 			'rpcssl',
-			__( 'Secure socket', 'btc-tip-jar'  )
+			'Secure Socket Layer'
 		);
 
 		$this->menu_page_item(
 			'rpcconnect',
-			__( 'Address', 'btc-tip-jar' )
+			'Address'
 		);
 
 		$this->menu_page_item(
 			'rpcport',
-			__( 'Port', 'btc-tip-jar' )
+			'Port'
 		);
 
 		$this->menu_page_item(
 			'rpcuser',
-			__( 'Username', 'btc-tip-jar' )
+			'Username'
 		);
 
 		$this->menu_page_item(
 			'rpcpassword',
-			__( 'Password', 'btc-tip-jar' )
+			'Password'
 		);
 
 		$this->menu_page_item(
 			'rpcwallet',
-			__( 'Wallet Password', 'btc-tip-jar' )
+			'Wallet Password'
 		);
 
 		$this->menu_page_item(
 			'fx',
-			__( 'Conversion Currency', 'btc-tip-jar' )
+			'Conversion Currency'
 		);
 
 		$this->menu_page_item(
 			'decimals',
-			__( 'Bitcoin Decimals', 'btc-tip-jar' )
+			'Bitcoin Decimals'
 		);
 
 		echo '</table>';
 		submit_button();
 		echo '</form></div>';
 	}
-private function menu_page_item( $item, $label ) {
+
+	private function menu_page_item( $item, $label ) {
 
 		echo '<tr valign="top">';
-		echo '<th scope="row"><label for="btc-tip-jar_options[' . $item . ']">' . $label . '</label></th>';
+		echo '<th scope="row"><label for="bitcoin-engine_menu[' . $item . ']">' . $label . '</label></th>';
 		echo '<td>';
 
 		if ( $item == 'rpcssl' ) {
 			echo '<input type="checkbox" class="regular-text" ';
-			echo 'name="btc-tip-jar_options[' . $item . ']" id="btc-tip-jar_options[' . $item . ']" ';
+			echo 'name="bitcoin-engine_menu[' . $item . ']" id="bitcoin-engine_menu[' . $item . ']" ';
 			if ( !empty( $this->settings[$item] ) ) {
 				checked( $this->settings[$item] );
 			}
 			echo 'value="1" />';
 		} else {
 			echo '<input type="text" class="regular-text" ';
-			echo 'name="btc-tip-jar_options[' . $item . ']" id="btc-tip-jar_options[' . $item . ']" ';
+			echo 'name="bitcoin-engine_menu[' . $item . ']" id="bitcoin-engine_menu[' . $item . ']" ';
 			echo 'value="' . $this->settings[$item] . '" />';
 		}
 
@@ -101,6 +106,7 @@ private function menu_page_item( $item, $label ) {
 		echo '</tr>';
 
 	}
+
 }
 
-?>
+/* EOF */

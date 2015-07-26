@@ -1,8 +1,7 @@
-Bitcoin Tip Jar
-===============
+Bitcoin Engine
+==============
 
-Easily tip specific posts with bitcoins.
-
+A general purpose bitcoin interface for WP plugins.
 
 Project Author
 ---------------

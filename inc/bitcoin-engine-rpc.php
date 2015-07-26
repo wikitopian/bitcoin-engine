@@ -1,18 +1,18 @@
 <?php
 
-class Btc_Tip_Jar_Btc {
-	private $settings;
+class Bitcoin_Engine_Rpc {
 
-	private $settings_menu;
+	public $settings;
+
+	public $settings_menu;
 
 	private $database;
 
 	private $connect_string;
 
-	public function __construct( $settings, $settings_menu, $database ) {
-		$this->settings      = $settings;
-		$this->settings_menu = $settings_menu;
-		$this->database      = $database;
+	public function __construct() {
+		$this->settings      = get_option( 'bitcoin-engine' );
+		$this->settings_menu = get_option( 'bitcoin-engine_menu' );
 
 		if ( $this->settings_menu['rpcssl'] ) {
 			$schema = 'https';
@@ -46,8 +46,9 @@ class Btc_Tip_Jar_Btc {
 		}
 
 		try {
-			$this->settings['debug'] = false;
-			$connection = new jsonRPCClient( $this->connect_string, $this->settings['debug'] );
+			$debug = $this->settings['debug'];
+			$debug = true;
+			$connection = new jsonRPCClient( $this->connect_string, $debug );
 
 			$connection->walletpassphrase(
 				$this->settings_menu['rpcwallet'],
@@ -61,7 +62,8 @@ class Btc_Tip_Jar_Btc {
 		}
 
 	}
-	public function refresh_tx_history() {
+
+	public function get_tx_history() {
 		$connection = $this->connect();
 
 		if ( !$connection ) {
@@ -83,36 +85,38 @@ class Btc_Tip_Jar_Btc {
 		}
 
 		$this->settings['lastblock'] = $history['lastblock'];
-		update_option( 'btc-tip-jar', $this->settings );
+		update_option( 'bitcoin-engine', $this->settings );
 
 		if ( !empty( $history['transactions'] ) ) {
-			$this->database->insert_transactions( $history['transactions'] );
+			return $history['transactions'];
 		}
 	}
+
 	private function get_account_label( $user ) {
 		$label  = home_url( '/' );
-		$label .= 'btc-tip-jar/user_' . $user;
+		$label .= 'bitcoin-engine/user_' . $user;
 
 		return $label;
 	}
+
 	public function get_user_address( $user ) {
 
 		$label = $this->get_account_label( $user );
 
 		$user_address = get_user_meta(
-			$user, 'btc-tip-jar_account', true
+			$user, 'bitcoin-engine_account', true
 		);
 
 		if ( empty( $user_address ) ) {
-			$btc = $this->connect();
+			$rpc = $this->connect();
 			try {
-				$getaccountaddress = $btc->getaccountaddress( $label );
+				$getaccountaddress = $rpc->getaccountaddress( $label );
 				$user_address = array();
 				$user_address['label']   = $label;
 				$user_address['address'] = $getaccountaddress;
 
 				update_user_meta(
-					$user, 'btc-tip-jar_account', $user_address
+					$user, 'bitcoin-engine_account', $user_address
 				);
 
 			} catch( Exception $e ) {
@@ -122,6 +126,7 @@ class Btc_Tip_Jar_Btc {
 			return $user_address;
 		}
 	}
+
 	public function get_post_address_user( $post_id, $author_id, $user_id ) {
 
 		$author_account = $this->get_user_address( $author_id );
@@ -135,9 +140,9 @@ class Btc_Tip_Jar_Btc {
 		if ( !empty( $address ) ) {
 			return $address;
 		} else {
-			$btc = $this->connect();
+			$rpc = $this->connect();
 			try {
-				$getnewaddress = $btc->getnewaddress( $author_account['label'] );
+				$getnewaddress = $rpc->getnewaddress( $author_account['label'] );
 
 				$this->database->insert_post_address_user(
 					$post_id,
@@ -153,48 +158,51 @@ class Btc_Tip_Jar_Btc {
 			}
 		}
 	}
+
 	public function get_post_address_anonymous( $post_id, $author ) {
 
 		$author_account = $this->get_user_address( $author );
 
 		$anonymous_address = get_post_meta(
-			$post_id, 'btc-tip-jar_anonymous', true
+			$post_id, 'bitcoin-engine_anonymous', true
 		);
 
 		if ( empty( $anonymous_address ) ) {
-			$btc = $this->connect();
+			$rpc = $this->connect();
 			try {
-				$getnewaddress = $btc->getnewaddress( $author_account['label'] );
+				$getnewaddress = $rpc->getnewaddress( $author_account['label'] );
 			} catch( Exception $e ) {
 				error_log( $e->getMessage() );
 			}
 			$anonymous_address = $getnewaddress;
 
 			update_post_meta(
-				$post_id, 'btc-tip-jar_anonymous', $anonymous_address
+				$post_id, 'bitcoin-engine_anonymous', $anonymous_address
 			);
 		}
 
 		return $anonymous_address;
 	}
+
 	public function get_user_balance( $user_id ) {
 		$label = $this->get_account_label( $user_id );
 
-		$btc = $this->connect();
+		$rpc = $this->connect();
 
 		try {
-			$user_balance = $btc->getbalance( $label, 0 );
+			$user_balance = $rpc->getbalance( $label, 0 );
 			return $user_balance;
 		} catch( Exception $e ) {
 			error_log( $e->getMessage() );
 			return 0.0;
 		}
 	}
+
 	public function do_withdrawal( $user, $address, $amount ) {
-		$btc = $this->connect();
+		$rpc = $this->connect();
 
 		try {
-			$validateaddress = $btc->validateaddress( $address );
+			$validateaddress = $rpc->validateaddress( $address );
 
 			if ( !$validateaddress['isvalid'] ) {
 				return 'INVALID_ADDRESS';
@@ -204,19 +212,19 @@ class Btc_Tip_Jar_Btc {
 
 			$label = $this->get_account_label( $user );
 
-			$getbalance = $btc->getbalance( $label );
+			$getbalance = $rpc->getbalance( $label );
 
 			if ( $amount > $getbalance ) {
 				return 'OVERDRAFT';
 			}
 
-			$sendfrom = $btc->sendfrom(
+			$sendfrom = $rpc->sendfrom(
 				$label,
 				$address,
 				$amount,
 				1,
 				$label,
-				'btc-tip-jar'
+				'bitcoin-engine'
 			);
 
 			$transaction = $sendfrom['result'];
@@ -228,6 +236,7 @@ class Btc_Tip_Jar_Btc {
 			return 'CONNECTION';
 		}
 	}
+
 }
 
-?>
+/* EOF */

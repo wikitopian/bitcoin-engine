@@ -7,14 +7,14 @@ jQuery( document ).ready(function( $ ) {
 function get_fx_rates() {
 
 	jQuery.ajax({
-		url: btc_tip_jar_fx.url,
+		url: bitcoin_engine_fx.url,
 		dataType: 'json',
 		crossDomain: true,
 		jsonpCallback: 'MyJSONPCallback',
 		success: function(data){
-			btc_tip_jar_fx.fx_rates = data;
+			bitcoin_engine_fx.fx_rates = data;
 
-			jQuery('.btc-tip-jar_fx-format').each(function(i, o) {
+			jQuery('.bitcoin-engine_fx-format').each(function(i, o) {
 				bitcoin_format(o);
 			});
 
@@ -34,12 +34,12 @@ function bitcoin_format(o) {
 		btc = o.text();
 	}
 
-	var fx  = btc_tip_jar_fx.fx_rates[btc_tip_jar_fx.fx]['15m'];
+	var fx  = bitcoin_engine_fx.fx_rates[bitcoin_engine_fx.fx]['15m'];
 
 	var fx_amount = jQuery.getFormattedCurrency(
 		btc * fx,
 		{
-			symbol: btc_tip_jar_fx.fx_rates[btc_tip_jar_fx.fx].symbol,
+			symbol: bitcoin_engine_fx.fx_rates[bitcoin_engine_fx.fx].symbol,
 		}
 	);
 
@@ -47,7 +47,7 @@ function bitcoin_format(o) {
 		btc,
 		{
 			symbol: "\u0e3f",
-			roundToDecimalPlace: btc_tip_jar.decimals,
+			roundToDecimalPlace: bitcoin_engine.decimals,
 		}
 	);
 
