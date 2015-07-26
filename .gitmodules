@@ -1,9 +1,9 @@
-[submodule "lib/json-rpc-php"]
-	path = lib/json-rpc-php
-	url = git@github.com:thinkphp/json-rpc-php.git
 [submodule "lib/phpqrcode"]
 	path = lib/phpqrcode
 	url = git@github.com:wikitopian/phpqrcode.git
 [submodule "scripts/jquery-formatcurrency"]
 	path = scripts/jquery-formatcurrency
 	url = git@github.com:fernandofig/jquery-formatcurrency.git
+[submodule "lib/json-rpc-php"]
+	path = lib/json-rpc-php
+	url = git@github.com:wikitopian/json-rpc-php.git
