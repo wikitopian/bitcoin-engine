@@ -195,7 +195,26 @@ class Bitcoin_Engine {
 
 		$post_history = $this->get_post_history_array();
 
-		return $post_history;
+		$post_array = array();
+
+		$post_array['history'] = $post_history;
+
+		global $post;
+
+		$post_array['post'] = $post;
+
+		$user_id = get_current_user_id();
+
+		$post_array['address'] = $this->rpc->get_post_address(
+			$post->ID,
+			$post->post_author,
+			$user_id
+		);
+		
+		$label = "btc_{$post->post_author}_{$post->ID}_{$user_id}";
+		$post_array['qr'] = $this->get_qr_url( $address, $label );
+
+		return $post_array;
 
 	}
 
@@ -245,6 +264,25 @@ class Bitcoin_Engine {
 
 		return array();
 
+	}
+
+	public function get_qr_url( $address, $label ) {
+		require_once( 'lib/phpqrcode/qrlib.php' );
+
+		$filename = "{$label}.png";
+		$path_url = plugins_url( '/lib/phpqrcode/cache/codes/', __FILE__ );
+		$path     = plugin_dir_path( __FILE__ ) . 'lib/phpqrcode/cache/codes/';
+
+		if ( !file_exists( $path . $filename ) ) {
+			QRcode::png(
+				"bitcoin:{$address}?label={$label}",
+				$path . $filename,
+				QR_ECLEVEL_H,
+				20
+			);
+		}
+
+		return $path_url . $filename;
 	}
 
 }

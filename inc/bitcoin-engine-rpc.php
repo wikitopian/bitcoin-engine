@@ -6,8 +6,6 @@ class Bitcoin_Engine_Rpc {
 
 	public $settings_menu;
 
-	private $database;
-
 	private $connect_string;
 
 	public function __construct() {
@@ -126,11 +124,23 @@ class Bitcoin_Engine_Rpc {
 		}
 	}
 
-	public function get_post_address_user( $post_id, $author_id, $user_id ) {
+	public function get_post_address( $post_id, $author_id, $user_id ) {
+
+		if( $user_id ) {
+			return $this->get_post_address_user( $post_id, $author_id, $user_id );
+		} else {
+			return $this->get_post_address_anonymous( $post_id, $author_id );
+		}
+
+	}
+
+	private function get_post_address_user( $post_id, $author_id, $user_id ) {
+
+		$db = new Bitcoin_Engine_Db();
 
 		$author_account = $this->get_user_address( $author_id );
 
-		$address = $this->database->get_user_address_query(
+		$address = $db->get_user_address_query(
 			$post_id,
 			$author_id,
 			$user_id
@@ -143,7 +153,7 @@ class Bitcoin_Engine_Rpc {
 			try {
 				$getnewaddress = $rpc->getnewaddress( $author_account['label'] );
 
-				$this->database->insert_post_address_user(
+				$db->insert_post_address_user(
 					$post_id,
 					$author_id,
 					$user_id,
@@ -158,7 +168,7 @@ class Bitcoin_Engine_Rpc {
 		}
 	}
 
-	public function get_post_address_anonymous( $post_id, $author ) {
+	private function get_post_address_anonymous( $post_id, $author ) {
 
 		$author_account = $this->get_user_address( $author );
 
