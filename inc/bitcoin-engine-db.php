@@ -161,6 +161,37 @@ SQL;
 		);
 	}
 
+	public function get_post_history( $post_id ) {
+
+		$anon_address = get_post_meta( $post_id, 'bitcoin-engine_anonymous', true );
+
+		$post_history_query = <<<SQL
+
+SELECT
+	trx.amount AS btc
+	FROM {$this->adr_table} AS adr
+	INNER JOIN {$this->trx_table} AS trx
+	ON  trx.address  = adr.address
+	AND adr.type     = 'tip'
+	AND trx.category = 'receive'
+	WHERE adr.post_id = {$post_id}
+UNION
+SELECT
+	trx.amount AS btc
+	FROM {$this->trx_table} AS trx
+	WHERE trx.address  = '{$anon_address}'
+	  AND trx.category = 'receive';
+
+SQL;
+
+		error_log( $post_history_query );
+
+		$post_history = $this->wpdb->get_results( $post_history_query );
+
+		return $post_history;
+	}
+
+	// delete this
 	public function get_donated_post( $post_id ) {
 
 		$donations_query = <<<SQL

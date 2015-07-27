@@ -193,7 +193,9 @@ class Bitcoin_Engine {
 
 	public function get_post_array() {
 
-		return array();
+		$post_history = $this->get_post_history_array();
+
+		return $post_history;
 
 	}
 
@@ -215,7 +217,11 @@ class Bitcoin_Engine {
 
 	public function get_post_history_array() {
 
-		return array();
+		global $post;
+
+		$post_history = $this->db->get_post_history( $post->ID );
+
+		return $post_history;
 
 	}
 
