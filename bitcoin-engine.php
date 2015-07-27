@@ -185,7 +185,7 @@ class Bitcoin_Engine {
 
 		echo "\n\n<!-- get_post_html BEGIN --><br />\n\n";
 
-		print_r( $post_array );
+		echo $post_array['amount'] * 1000;
 
 		echo "\n\n<!-- get_post_HTML END -->";
 
@@ -198,6 +198,14 @@ class Bitcoin_Engine {
 		$post_array = array();
 
 		$post_array['history'] = $post_history;
+
+		$amount = 0.0;
+		foreach( $post_array['history'] as $transaction ) {
+
+			$amount += $transaction->amount;
+
+		}
+		$post_array['amount'] = $amount;
 
 		global $post;
 
@@ -212,7 +220,7 @@ class Bitcoin_Engine {
 		);
 		
 		$label = "btc_{$post->post_author}_{$post->ID}_{$user_id}";
-		$post_array['qr'] = $this->get_qr_url( $address, $label );
+		$post_array['qr'] = $this->get_qr_url( $post_array['address'], $label );
 
 		return $post_array;
 

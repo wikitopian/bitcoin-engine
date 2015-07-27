@@ -168,7 +168,11 @@ SQL;
 		$post_history_query = <<<SQL
 
 SELECT
-	trx.amount AS btc
+    trx.amount AS amount,
+    trx.fee AS fee,
+    adr.tx_id AS sender,
+    trx.txid AS transaction,
+    trx.time AS timestamp
 	FROM {$this->adr_table} AS adr
 	INNER JOIN {$this->trx_table} AS trx
 	ON  trx.address  = adr.address
@@ -177,58 +181,20 @@ SELECT
 	WHERE adr.post_id = {$post_id}
 UNION
 SELECT
-	trx.amount AS btc
+	trx.amount AS amount,
+	trx.fee AS fee,
+	0 AS sender,
+	trx.txid AS transaction,
+	trx.time AS timestamp
 	FROM {$this->trx_table} AS trx
 	WHERE trx.address  = '{$anon_address}'
 	  AND trx.category = 'receive';
 
 SQL;
-
-		error_log( $post_history_query );
 
 		$post_history = $this->wpdb->get_results( $post_history_query );
 
 		return $post_history;
-	}
-
-	// delete this
-	public function get_donated_post( $post_id ) {
-
-		$donations_query = <<<SQL
-SELECT
-	SUM( trx.amount ) AS btc
-	FROM {$this->adr_table} AS adr
-	INNER JOIN {$this->trx_table} AS trx
-	ON  trx.address  = adr.address
-	AND adr.type     = 'tip'
-	AND trx.category = 'receive'
-	WHERE adr.post_id = {$post_id};
-SQL;
-
-		$donations = $this->wpdb->get_results( $donations_query );
-		if ( !empty( $donations[0] ) ) {
-			$donations = $donations[0]->btc;
-		} else {
-			$donations = 0.0;
-		}
-
-		$anon_address = get_post_meta( $post_id, 'bitcoin-engine_anonymous', true );
-
-		$anon_donations_query = <<<SQL
-SELECT
-	SUM( trx.amount ) AS btc
-	FROM {$this->trx_table} AS trx
-	WHERE trx.address  = '{$anon_address}'
-	  AND trx.category = 'receive';
-SQL;
-
-		$anon_donations = $this->wpdb->get_results( $anon_donations_query );
-
-		if ( !empty( $anon_donations[0] ) ) {
-			return $donations + $anon_donations[0]->btc;
-		} else {
-			return $donations;
-		}
 	}
 
 }
