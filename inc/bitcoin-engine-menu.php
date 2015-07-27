@@ -23,6 +23,8 @@ class Bitcoin_Engine_Menu {
 			array( &$this, 'menu_page' )
 		);
 
+		add_filter( 'user_contactmethods', array( &$this, 'add_withdrawal_address' ) );
+
 	}
 
 	public function menu_settings() {
@@ -105,6 +107,13 @@ class Bitcoin_Engine_Menu {
 		echo '</td>';
 		echo '</tr>';
 
+	}
+
+	public function add_withdrawal_address( $profile ) {
+
+		$profile['bitcoin-engine_withdrawal'] = 'Bitcoin Address';
+
+		return $profile;
 	}
 
 }
