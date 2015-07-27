@@ -211,12 +211,9 @@ class Bitcoin_Engine_Rpc {
 		$rpc = $this->connect();
 
 		try {
-			$validateaddress = $rpc->validateaddress( $address );
 
-			if ( !$validateaddress['isvalid'] ) {
+			if( !$this->validate_address( $address ) ) {
 				return 'INVALID_ADDRESS';
-			} elseif ( $validateaddress['ismine'] ) {
-				return 'INTERNAL_TRANSFER';
 			}
 
 			$label = $this->get_account_label( $user );
@@ -244,6 +241,28 @@ class Bitcoin_Engine_Rpc {
 			error_log( $e->getMessage() );
 			return 'CONNECTION';
 		}
+	}
+
+	public function validate_address( $address ) {
+		$rpc = $this->connect();
+
+		try {
+
+			$validateaddress = $rpc->validateaddress( $address );
+
+			if( $validateaddress['isvalid'] ) {
+				return true;
+			} else {
+				return false;
+			}
+
+		} catch( Exception $e ) {
+
+			error_log( $e->getMessage() );
+
+			return false;
+		}
+
 	}
 
 }

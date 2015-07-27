@@ -293,6 +293,10 @@ class Bitcoin_Engine {
 		return $path_url . $filename;
 	}
 
+	public function validate_address( $address ) {
+		return $this->rpc->validate_address( $address );
+	}
+
 }
 
 $bitcoin_engine = new Bitcoin_Engine();
