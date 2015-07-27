@@ -85,6 +85,13 @@ class Bitcoin_Engine_Rpc {
 		update_option( 'bitcoin-engine', $this->settings );
 
 		if ( !empty( $history['transactions'] ) ) {
+
+			foreach( $history['transactions'] as &$transaction ) {
+
+				$transaction['confirmations'] = abs( $transaction['confirmations'] );
+
+			}
+
 			return $history['transactions'];
 		}
 	}

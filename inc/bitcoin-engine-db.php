@@ -31,6 +31,7 @@ CREATE TABLE {$this->trx_table} (
 	txid      VARCHAR(64)  NOT NULL,
 	blockhash VARCHAR(64)  NOT NULL,
 	account   varchar(64)  NULL,
+	payout    VARCHAR(64)  DEFAULT 'UNPAID',
 	time      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
 	UNIQUE KEY (txid)
 );
