@@ -235,7 +235,7 @@ class Bitcoin_Engine {
 
 		echo "\n\n<!-- get_post_html BEGIN --><br />\n\n";
 
-		echo $post_array['amount'] * 1000;
+		echo $post_array['amount'];
 
 		echo "\n\n<!-- get_post_HTML END -->";
 
@@ -255,7 +255,14 @@ class Bitcoin_Engine {
 			$amount += $transaction->amount;
 
 		}
-		$post_array['amount'] = $amount;
+
+		global $post;
+
+		if( $post->post_type == 'reply' ) {
+		$post_array['amount'] = -$amount;
+		} else {
+			$post_array['amount'] = $amount;
+		}
 
 		global $post;
 
@@ -296,7 +303,18 @@ class Bitcoin_Engine {
 
 		global $post;
 
-		$post_history = $this->db->get_post_history( $post->ID );
+		if( $post->post_type == 'reply' ) {
+
+			$post_id = $post->post_parent;
+			$reply_id = $post->post_author;
+			$post_history = $this->db->get_post_history( $post_id, $reply_id );
+
+		} else {
+
+			$post_id = $post->ID;
+			$post_history = $this->db->get_post_history( $post_id );
+
+		}
 
 		return $post_history;
 

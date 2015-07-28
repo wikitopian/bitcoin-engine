@@ -165,7 +165,11 @@ SQL;
 		);
 	}
 
-	public function get_post_history( $post_id ) {
+	public function get_post_history( $post_id, $reply_id = null ) {
+
+		if( empty( $reply_id ) ) {
+			$reply_id = 'adr.tx_id';
+		}
 
 		$anon_address = get_post_meta( $post_id, 'bitcoin-engine_anonymous', true );
 
@@ -183,6 +187,7 @@ SELECT
 	ON  trx.address  = adr.address
 	AND adr.type     = 'tip'
 	AND trx.category = 'receive'
+	AND adr.tx_id = {$reply_id}
 	WHERE adr.post_id = {$post_id}
 UNION
 SELECT
