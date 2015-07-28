@@ -365,6 +365,22 @@ class Bitcoin_Engine {
 		return $this->rpc->validate_address( $address );
 	}
 
+	public function get_top_posts( $post_type, $days_ago, $count ) {
+		$top_posts = $this->db->get_top_posts( $post_type, $days_ago, $count );
+
+		foreach( $top_posts as &$top_post ) {
+
+			$top_post_obj = get_post( $top_post->ID );
+
+			$top_post->name = $top_post_obj->post_title;
+
+			$top_post->link = get_permalink( $top_post->ID );
+
+		}
+
+		return $top_posts;
+	}
+
 }
 
 $bitcoin_engine = new Bitcoin_Engine();

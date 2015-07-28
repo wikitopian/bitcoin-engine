@@ -260,6 +260,47 @@ UNPAID;
 
 	}
 
+	public function get_top_posts( $post_type, $days_ago, $count ) {
+
+		$settings = get_option( 'bitcoin-engine' );
+
+		$get_top_posts_query = <<<TOP
+
+SELECT
+	pst.ID,
+	SUM( trx.amount ) AS amount
+	FROM {$this->wpdb->prefix}posts AS pst
+	INNER JOIN {$this->adr_table} AS adr
+	ON  adr.post_id = pst.ID
+	INNER JOIN {$this->trx_table} AS trx
+	ON  trx.address = adr.address
+	WHERE pst.post_date >= DATE_ADD( CURRENT_TIMESTAMP(), INTERVAL -%d DAY )
+	  AND pst.post_type = '%s'
+	  AND pst.post_status = 'publish'
+	  AND trx.category = 'receive'
+	  AND trx.confirmations >= %d
+	  AND adr.type = 'tip'
+	GROUP BY pst.ID
+	HAVING   SUM( trx.amount ) > 0
+	ORDER BY SUM( trx.amount ) DESC
+	LIMIT %d;
+
+TOP;
+
+		$get_top_posts_query = $this->wpdb->prepare(
+			$get_top_posts_query,
+			array(
+				$days_ago,
+				$post_type,
+				$settings['min_conf'],
+				$count
+			)
+		);
+
+		return $this->wpdb->get_results( $get_top_posts_query );
+
+	}
+
 }
 
 /* EOF */
