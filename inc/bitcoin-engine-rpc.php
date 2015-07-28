@@ -90,13 +90,24 @@ class Bitcoin_Engine_Rpc {
 
 				$transaction['confirmations'] = abs( $transaction['confirmations'] );
 
+				if( $transaction['account'] ) {
+					$transaction['rx_id'] = preg_replace( '/^.*user_/i', '', $transaction['account'] );
+
+					if( !is_numeric( $transaction['rx_id'] ) ) {
+						$transaction['rx_id'] = 0;
+					}
+
+				} else {
+					$transaction['rx_id'] = 0;
+				}
+
 			}
 
 			return $history['transactions'];
 		}
 	}
 
-	private function get_account_label( $user ) {
+	public static function get_account_label( $user ) {
 		$label  = home_url( '/' );
 		$label .= 'bitcoin-engine/user_' . $user;
 
@@ -269,6 +280,44 @@ class Bitcoin_Engine_Rpc {
 
 			return false;
 		}
+
+	}
+
+	public function do_payout( $account, $rx_id, $amount ) {
+		$rpc = $this->connect();
+
+		$settings = get_option( 'bitcoin-engine' );
+
+		$commission = floatval( $settings['commission'] );
+
+		$comm_amount = $amount * $commission;
+
+		$payout_amount = $amount - $comm_amount;
+
+		try {
+
+			$comm_account = $rpc->getaccountaddress( $settings['comm_label'] );
+
+			$payout_address = get_user_meta( $rx_id, 'bitcoin-engine_withdrawal', true );
+
+			if( $commission > 0.0 ) {
+				$rpc->move( $account, $comm_account, $comm_amount );
+			}
+
+			$rpc = $this->connect();
+			$rpc->sendfrom( $account, $payout_address, $payout_amount );
+
+			return true;
+
+
+		} catch( Exception $e ) {
+
+			error_log( $e->getMessage() );
+
+			return false;
+		}
+
+
 
 	}
 

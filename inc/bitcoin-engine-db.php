@@ -30,7 +30,8 @@ CREATE TABLE {$this->trx_table} (
 	address   VARCHAR(64)  NOT NULL,
 	txid      VARCHAR(64)  NOT NULL,
 	blockhash VARCHAR(64)  NOT NULL,
-	account   varchar(64)  NULL,
+	account   VARCHAR(64)  NULL,
+	rx_id     MEDIUMINT(9) DEFAULT 0,
 	payout    VARCHAR(64)  DEFAULT 'UNPAID',
 	time      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
 	UNIQUE KEY (txid)
@@ -95,6 +96,7 @@ DUP;
 					'txid'          => $transaction['txid'],
 					'blockhash'     => $transaction['blockhash'],
 					'account'       => $transaction['account'],
+					'rx_id'         => $transaction['rx_id'],
 				)
 
 			);
@@ -114,6 +116,7 @@ DUP;
 					'address'       => $transaction['address'],
 					'blockhash'     => $transaction['blockhash'],
 					'account'       => $transaction['account'],
+					'rx_id'         => $transaction['rx_id'],
 				),
 
 				array( 'txid'       => $transaction['txid'] )
@@ -169,11 +172,12 @@ SQL;
 		$post_history_query = <<<SQL
 
 SELECT
-    trx.amount AS amount,
-    trx.fee AS fee,
-    adr.tx_id AS sender,
-    trx.txid AS transaction,
-    trx.time AS timestamp
+	trx.amount AS amount,
+	trx.fee AS fee,
+	adr.tx_id AS sender,
+	trx.txid AS transaction,
+	trx.payout AS payout,
+	trx.time AS timestamp
 	FROM {$this->adr_table} AS adr
 	INNER JOIN {$this->trx_table} AS trx
 	ON  trx.address  = adr.address
@@ -186,6 +190,7 @@ SELECT
 	trx.fee AS fee,
 	0 AS sender,
 	trx.txid AS transaction,
+	trx.payout AS payout,
 	trx.time AS timestamp
 	FROM {$this->trx_table} AS trx
 	WHERE trx.address  = '{$anon_address}'
@@ -196,6 +201,58 @@ SQL;
 		$post_history = $this->wpdb->get_results( $post_history_query );
 
 		return $post_history;
+	}
+
+	public function get_payouts_unpaid() {
+
+		$payouts_unpaid_query = <<<UNPAID
+
+SELECT
+	trx.rx_id,
+	trx.account,
+	SUM(trx.amount) AS amount,
+	SUM(trx.fee) AS fee
+	FROM {$this->trx_table} AS trx
+	WHERE trx.category = 'receive'
+	  AND trx.payout = 'UNPAID'
+	  AND trx.account <> ''
+	  AND trx.confirmations >= '%d'
+	GROUP BY
+		trx.rx_id,
+		trx.account
+
+
+UNPAID;
+
+		$settings = get_option( 'bitcoin-engine' );
+
+		if( !is_int( $settings['min_conf'] ) || $settings['min_conf'] <= 0 ) {
+			$settings['min_conf'] = 1;
+		}
+
+		$payouts_unpaid_query = $this->wpdb->prepare(
+			$payouts_unpaid_query,
+			$settings['min_conf']
+		);
+
+		$payouts_unpaid = $this->wpdb->get_results( $payouts_unpaid_query );
+
+		return $payouts_unpaid;
+
+	}
+
+	public function confirm_paid_out( $account ) {
+
+		$this->wpdb->update(
+			$this->trx_table,
+			array(
+				'payout' => 'PAID',
+			),
+			array(
+				'account' => $account,
+			)
+		);
+
 	}
 
 }

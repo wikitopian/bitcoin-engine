@@ -10,6 +10,10 @@
  * License:     LGPLv3
  */
 
+require_once( 'inc/bitcoin-engine-menu.php' );
+require_once( 'inc/bitcoin-engine-db.php' );
+require_once( 'inc/bitcoin-engine-rpc.php' );
+
 class Bitcoin_Engine {
 
 	protected $db;
@@ -24,6 +28,9 @@ class Bitcoin_Engine {
 			'list_tx_max' => 999,
 			'lastblock'   => false,
 			'fx_rate_url' => 'https://blockchain.info/ticker?cors=true',
+			'min_conf'    => 1,
+			'commission'  => '0.0',
+			'comm_label'  => Bitcoin_Engine_Rpc::get_account_label( 0 ),
 		);
 
 		$settings = get_option( 'bitcoin-engine', $settings );
@@ -44,15 +51,12 @@ class Bitcoin_Engine {
 		$this->settings = get_option( 'bitcoin-engine_menu', $settings_menu );
 		update_option( 'bitcoin-engine_menu', $this->settings );
 
-		require_once( 'inc/bitcoin-engine-menu.php' );
 		$this->menu = new Bitcoin_Engine_Menu();
 
 		// database functionality
-		require_once( 'inc/bitcoin-engine-db.php' );
 		$this->db = new Bitcoin_Engine_Db();
 
 		// bitcoin functionality
-		require_once( 'inc/bitcoin-engine-rpc.php' );
 		$this->rpc = new Bitcoin_Engine_Rpc();
 
 		register_activation_hook(
@@ -78,6 +82,8 @@ class Bitcoin_Engine {
 		);
 
 		$this->refresh_tx_history();
+
+		$this->do_payouts();
 
 	}
 
@@ -171,11 +177,55 @@ class Bitcoin_Engine {
 
 	}
 
+	public function set_commission( $commission ) {
+
+		$settings = get_option( 'bitcoin-engine' );
+
+		$settings['commission'] = $commission;
+
+		update_option( 'bitcoin-engine', $settings );
+
+	}
+
+
 	private function refresh_tx_history() {
 
 		$tx = $this->rpc->get_tx_history();
 
 		$this->db->update_tx_history( $tx );
+
+	}
+
+	private function do_payouts() {
+
+		$unpaids = $this->db->get_payouts_unpaid();
+
+		$payees = array();
+		foreach( $unpaids as &$unpaid ) {
+
+			$withdrawal = get_user_meta(
+				$unpaid->rx_id,
+				'bitcoin-engine_withdrawal',
+				true
+			);
+
+			if( empty( $withdrawal ) ) {
+				continue;
+			}
+
+			if( $unpaid->amount < 0.001 || $unpaid->amount < $unpaid->fee ) {
+				continue;
+			}
+
+			$paid = $this->rpc->do_payout( $unpaid->account, $unpaid->rx_id, $unpaid->amount );
+
+			if( $paid ) {
+
+				$this->db->confirm_paid_out( $unpaid->account );
+
+			}
+
+		}
 
 	}
 
