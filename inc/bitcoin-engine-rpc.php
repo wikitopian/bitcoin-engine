@@ -206,6 +206,8 @@ class Bitcoin_Engine_Rpc {
 			update_post_meta(
 				$post_id, 'bitcoin-engine_anonymous', $anonymous_address
 			);
+
+			$this->db->insert_post_address_user( $post_id, $author, 0, $anonymous_address );
 		}
 
 		return $anonymous_address;
