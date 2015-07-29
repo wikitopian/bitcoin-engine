@@ -381,6 +381,25 @@ class Bitcoin_Engine {
 		return $top_posts;
 	}
 
+	public function get_amount( $post_id = null ) {
+
+		global $post;
+
+		if( empty( $post_id ) ) {
+			$post_id = $post->ID;
+		}
+
+		$post_history = $this->db->get_post_history( $post_id );
+
+		$amount = 0.0;
+		foreach( $post_history as $transactions ) {
+			$amount += $transactions->amount;
+		}
+
+		return $amount;
+
+	}
+
 }
 
 $bitcoin_engine = new Bitcoin_Engine();
