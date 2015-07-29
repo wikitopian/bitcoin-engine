@@ -400,6 +400,24 @@ class Bitcoin_Engine {
 
 	}
 
+	public function refresh_post_meta_amounts( $post_type ) {
+
+		$post_amounts = $this->db->get_post_amounts( $post_type );
+
+		foreach( $post_amounts as $post_amount ) {
+
+			$amount = $post_amount->amount;
+
+			if( empty( $amount ) ) {
+				$amount = 0.0;
+			}
+
+			update_post_meta( $post_amount->ID, '_bitcoin-engine_amount', $amount );
+
+		}
+
+	}
+
 }
 
 $bitcoin_engine = new Bitcoin_Engine();

@@ -301,6 +301,41 @@ TOP;
 
 	}
 
+public function get_post_amounts( $post_type ) {
+
+		$settings = get_option( 'bitcoin-engine' );
+
+		$get_post_amounts_query = <<<TOP
+
+SELECT
+	pst.ID,
+	SUM( trx.amount ) AS amount
+	FROM {$this->wpdb->prefix}posts AS pst
+	LEFT JOIN {$this->adr_table} AS adr
+	ON  adr.post_id = pst.ID
+	AND adr.type = 'tip'
+	LEFT JOIN {$this->trx_table} AS trx
+	ON  trx.address = adr.address
+	AND trx.category = 'receive'
+	AND trx.confirmations >= %d
+	WHERE pst.post_type = '%s'
+	  AND pst.post_status = 'publish'
+	GROUP BY pst.ID
+
+TOP;
+
+		$get_post_amounts_query = $this->wpdb->prepare(
+			$get_post_amounts_query,
+			array(
+				$settings['min_conf'],
+				$post_type,
+			)
+		);
+
+		return $this->wpdb->get_results( $get_post_amounts_query );
+
+	}
+
 }
 
 /* EOF */
