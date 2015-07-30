@@ -208,6 +208,47 @@ SQL;
 		return $post_history;
 	}
 
+	public function get_user_history( $user_id ) {
+
+		$user_history_query = <<<SQL
+
+SELECT
+	'TX' AS type,
+	-trx.amount AS amount,
+	adr.rx_id AS user,
+	adr.post_id AS post_id,
+	trx.txid AS transaction,
+	trx.time AS timestamp
+	FROM {$this->adr_table} AS adr
+	INNER JOIN {$this->trx_table} AS trx
+	ON  trx.address  = adr.address
+	AND adr.type     = 'tip'
+	AND trx.category = 'receive'
+	WHERE adr.tx_id = {$user_id}
+UNION
+SELECT
+	'RX' AS type,
+	trx.amount AS amount,
+	adr.tx_id AS user,
+	adr.post_id AS post_id,
+	trx.txid AS transaction,
+	trx.time AS timestamp
+	FROM {$this->adr_table} AS adr
+	INNER JOIN {$this->trx_table} AS trx
+	ON  trx.address  = adr.address
+	AND adr.type     = 'tip'
+	AND trx.category = 'receive'
+	WHERE adr.rx_id = {$user_id}
+	ORDER BY timestamp DESC;
+
+SQL;
+
+		$user_history = $this->wpdb->get_results( $user_history_query );
+
+		return $user_history;
+
+	}
+
 	public function get_payouts_unpaid() {
 
 		$payouts_unpaid_query = <<<UNPAID

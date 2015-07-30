@@ -322,9 +322,9 @@ class Bitcoin_Engine {
 
 	}
 
-	public function get_user_history_html() {
+	public function get_user_history_html( $user_id = null ) {
 
-		$user_history = $this->get_user_history_array();
+		$user_history = $this->get_user_history_array( $user_id );
 
 		echo "\n\n<!-- get_user_history BEGIN -->\n\n";
 
@@ -338,9 +338,33 @@ class Bitcoin_Engine {
 
 	}
 
-	public function get_user_history_array() {
+	public function get_user_history_array( $user_id = null ) {
 
-		return array();
+		if( empty( $user_id ) ) {
+			$user_id = get_current_user_id();
+		}
+
+		$user_history = $this->db->get_user_history( $user_id );
+
+		foreach( $user_history as &$tip ) {
+
+			$dt = new DateTime( $tip->timestamp );
+
+			$tip->date = $dt->format( 'Y-m-d' );
+
+			$user = get_user_by( 'id', $tip->user );
+
+			$tip->user_name = $user->user_login;
+
+			$tip->tip = $this->get_tip_span( $tip->amount );
+
+			$tip->story = get_the_title( $tip->post_id );
+
+			$tip->story_url = get_permalink( $tip->post_id );
+
+		}
+
+		return $user_history;
 
 	}
 
@@ -381,6 +405,23 @@ class Bitcoin_Engine {
 		}
 
 		return $top_posts;
+	}
+
+	public function get_amount_span( $post_id = null ) {
+
+		$amount = $this->get_amount( $post_id );
+
+		return $this->get_tip_span( $amount );
+
+	}
+
+	public function get_tip_span( $amount ) {
+
+		$html  = "<span class=\"bitcoin-engine_format\">";
+		$html .= $amount;
+		$html .= "</span>";
+
+		return $html;
 	}
 
 	public function get_amount( $post_id = null ) {
