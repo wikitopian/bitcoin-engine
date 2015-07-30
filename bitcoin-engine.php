@@ -45,7 +45,7 @@ class Bitcoin_Engine {
 			'rpcpassword' => null,
 			'rpcwallet'   => null,
 			'fx'          => 'USD',
-			'decimals'    => 5,
+			'decimals'    => 1,
 		);
 
 		$this->settings = get_option( 'bitcoin-engine_menu', $settings_menu );
@@ -110,7 +110,7 @@ class Bitcoin_Engine {
 		);
 
 		wp_enqueue_script(
-			'bitcoin-engine',
+			'bitcoin_engine',
 			plugins_url( '/scripts/bitcoin-engine.js', __FILE__ ),
 			array(
 				'jquery',
@@ -235,7 +235,9 @@ class Bitcoin_Engine {
 
 		echo "\n\n<!-- get_post_html BEGIN --><br />\n\n";
 
+		echo "<span class=\"bitcoin-engine_format\">\n";
 		echo $post_array['amount'];
+		echo "\n</span>";
 
 		echo "\n\n<!-- get_post_HTML END -->";
 

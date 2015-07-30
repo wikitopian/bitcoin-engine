@@ -14,7 +14,7 @@ function get_fx_rates() {
 		success: function(data){
 			bitcoin_engine_fx.fx_rates = data;
 
-			jQuery('.bitcoin-engine_fx-format').each(function(i, o) {
+			jQuery('.bitcoin-engine_format').each(function(i, o) {
 				bitcoin_format(o);
 			});
 
@@ -43,23 +43,19 @@ function bitcoin_format(o) {
 		}
 	);
 
-	var btc_amount = jQuery.getFormattedCurrency(
-		btc,
+	var mbtc_amount = jQuery.getFormattedCurrency(
+		btc * 1000.0,
 		{
-			symbol: "\u0e3f",
+			symbol: "m\u0e3f",
 			roundToDecimalPlace: bitcoin_engine.decimals,
 		}
 	);
 
-	var amount =
-		btc_amount
-		+
-		' (' + fx_amount + ')';
-
 	if( o.data('btc') ) {
-		o.val(amount);
+		o.val(mbtc_amount);
 	} else {
-		o.text(amount);
+		o.text(mbtc_amount);
+		o.attr( 'title', fx_amount );
 	}
 
 }
