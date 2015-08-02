@@ -152,8 +152,10 @@ SQL;
 		}
 	}
 
-	public function insert_post_address_user( $post_id, $rx_id, $tx_id, $address ) {
-		$this->wpdb->insert(
+	public static function insert_post_address_user( $post_id, $rx_id, $tx_id, $address ) {
+		global $wpdb;
+
+		$wpdb->insert(
 			$this->adr_table,
 			array(
 				'type'      => 'tip',
