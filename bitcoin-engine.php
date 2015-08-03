@@ -190,7 +190,11 @@ class Bitcoin_Engine {
 
 	private function refresh_tx_history() {
 
-		$tx = $this->rpc->get_tx_history();
+		if ( false === ( $tx = get_transient( 'bitcoin-engine_tx_data' ) ) ) {
+			$tx = $this->rpc->get_tx_history();
+
+			set_transient( 'bitcoin-engine_tx_data', $tx, 10 );
+		}
 
 		$this->db->update_tx_history( $tx );
 
