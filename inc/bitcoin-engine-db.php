@@ -156,7 +156,7 @@ SQL;
 		global $wpdb;
 
 		$wpdb->insert(
-			$this->adr_table,
+			$wpdb->prefix . 'bitcoin_engine_addresses',
 			array(
 				'type'      => 'tip',
 				'post_id'   => $post_id,
